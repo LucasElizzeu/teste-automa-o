@@ -1,0 +1,54 @@
+# -----------------------------------------------------------------------------
+# Servico systemd para o monitoramento (agendador residente)
+#
+# Instalar:
+#   sudo cp deploy/monitoramento.service /etc/systemd/system/monitoramento.service
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now monitoramento
+#
+# Edite User/WorkingDirectory se o projeto nao estiver em /opt/monitoramento.
+# -----------------------------------------------------------------------------
+[Unit]
+Description=Monitoramento operacional (captura de dashboards + Telegram)
+Documentation=file:/opt/monitoramento/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=monitor
+Group=monitor
+WorkingDirectory=/opt/monitoramento
+
+# Timezone do servico (Alteracoes de horario do agendador usam America/Manaus)
+Environment=TZ=America/Manaus
+Environment=PYTHONUNBUFFERED=1
+
+# O .env nao e lido daqui: o app carrega /opt/monitoramento/.env sozinho
+ExecStart=/opt/monitoramento/.venv/bin/python /opt/monitoramento/main.py --schedule
+
+# Reinicia se quebrar; espera 10s entre tentativas
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=0
+
+# Encerra limpo no stop
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+# Logs centralizados no journalctl (o app tambem grava em logs/)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=monitoramento
+
+# ------------------- Endurecimento basico -------------------
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=read-only
+ReadWritePaths=/opt/monitoramento/screenshots /opt/monitoramento/logs /opt/monitoramento/sessions /opt/monitoramento/.tmp
+# O Chromium do Playwright precisa de mais memoria do que o padrao em alguns hosts
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

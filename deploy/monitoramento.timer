@@ -1,0 +1,26 @@
+# -----------------------------------------------------------------------------
+# Timer systemd (alternativa ao agendador interno --schedule)
+#
+# Use UM dos dois modos, nao ambos:
+#   A) Servico residente : main.py --schedule      (monitoramento.service)
+#   B) Timer + one-shot  : main.py --all           (monitoramento.service + timer)
+#
+# Para o modo B, troque ExecStart para "main.py --all" e habilite o timer:
+#   sudo systemctl enable --now monitoramento.timer
+# -----------------------------------------------------------------------------
+[Unit]
+Description=Dispara a captura de monitoramento em horarios fixos
+
+[Timer]
+# 08:00, 12:00, 16:00, 20:00, 00:00 em America/Manaus
+OnCalendar=*-*-* 08,12,16,20:00:00
+OnCalendar=*-*-* 00:00:00
+Timezone=America/Manaus
+# Se o servidor estava desligado no horario, roda ao ligar
+Persistent=true
+# Evita rajada se varias execucoes se acumularem
+AccuracySec=30s
+Unit=monitoramento.service
+
+[Install]
+WantedBy=timers.target

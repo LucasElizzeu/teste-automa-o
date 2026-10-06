@@ -1,0 +1,44 @@
+# -----------------------------------------------------------------------------
+# docker compose up -d --build
+#
+# O container roda o agendador interno (main.py --schedule), que respeita
+# America/Manaus independentemente do fuso do host.
+#
+# Execucoes manuais:
+#   docker compose run --rm monitor python main.py --telegram-test
+#   docker compose run --rm monitor python main.py --site "MANAUS - TEFE" --no-send
+# -----------------------------------------------------------------------------
+services:
+  monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: monitoramento:latest
+    container_name: monitoramento
+    restart: unless-stopped
+
+    # Segredos vem do .env (nunca do compose)
+    env_file:
+      - .env
+    environment:
+      TZ: America/Manaus
+      HEADLESS: "${HEADLESS:-true}"
+
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./screenshots:/app/screenshots
+      - ./logs:/app/logs
+      - ./sessions:/app/sessions
+
+    # O Chromium precisa de memoria compartilhada maior que o padrao de 64MB
+    shm_size: "1gb"
+
+    # Mantem o container previsivel em producao
+    security_opt:
+      - no-new-privileges:true
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"

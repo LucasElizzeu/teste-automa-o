@@ -1,0 +1,26 @@
+# segredos
+.env
+.env.*
+!.env.example
+
+# sessoes de navegador (contem cookies/tokens autenticados)
+sessions/*.json
+sessions/*.json.tmp
+
+# artefatos
+screenshots/*
+logs/*
+!screenshots/.gitkeep
+!logs/.gitkeep
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# editores / OS
+.vscode/
+.idea/
+.DS_Store

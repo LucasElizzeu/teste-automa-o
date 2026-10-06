@@ -1,0 +1,15 @@
+# Navegador / automacao
+playwright==1.48.0
+
+# Configuracao
+PyYAML==6.0.2
+python-dotenv==1.0.1
+
+# Cliente HTTP (Telegram)
+requests==2.32.3
+
+# Imagens (banner de identificacao e recorte)
+Pillow==11.0.0
+
+# Fuso horario (tzdata garante America/Manaus em containers slim)
+tzdata==2024.2
