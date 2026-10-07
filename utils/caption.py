@@ -32,13 +32,7 @@ def build_caption(
     """Legenda da imagem - identifica circuito, horario e origem."""
     label = SYSTEM_LABEL.get(system_id.lower(), system_id.capitalize())
     arrow = site_name.replace(" - ", " → ").replace(" -> ", " → ")
-    lines = [
-        "📊 <b>MONITORAMENTO DE TRAFEGO</b>",
-        "",
-        f"📍 <b>Circuito:</b> {arrow}",
-        f"🕐 <b>Atualizacao:</b> {moment.strftime('%d/%m/%Y %H:%M')}",
-        f"📈 <b>Origem:</b> {label}",
-    ]
+    lines = " "
     if description:
         lines.append(f"📝 {description}")
     return _escape_safe("\n".join(lines))
