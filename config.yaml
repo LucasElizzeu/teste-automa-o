@@ -44,7 +44,7 @@ browser:
 # ---------------------------------------------
 telegram:
   enabled: true
-  send_by_default: true
+  send_by_default: false
   silent_notifications: false
   max_caption_length: 1024
 
@@ -87,27 +87,9 @@ systems:
       time_picker_selector: null
       presets: {}
 
-  flowbix:
-    login_url: null
-    login:
-      username_selector: null
-      password_selector: null
-      submit_selector: null
-      success_selector: null
-      logged_in_url_contains: null
-    panel:
-      container_selector: null
-      ready_selector: null
-      error_selector: null
-    filters:
-      time_picker_selector: null
-      presets: {}
-
 # ---------------------------------------------
 # Sites / dashboards
 # ---------------------------------------------
-# y = 46 e a barra superior do Grafana ate o inicio dos paineis.
-# height = fim do conteudo daquele dashboard, ja calibrado.
 # ---------------------------------------------
 sites:
   - nome: "MANAUS x COARI"
@@ -166,10 +148,10 @@ sites:
     descricao: "Saida Link CDN Consumo"
     crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
 
-  - nome: "SAIDA LINK CDN"
+  - nome: "LTE 4G"
     sistema: "grafana"
     url: "http://45.190.21.30:3666/d/kokmJS2Dz/cliente-velosonet-velosonet-4g-geral-v3?orgId=2&refresh=1m&from=now-1h&to=now"
     periodo: "1h"
     enabled: true
     descricao: "VelosoNET 4G"
-    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
+    crop_region: { x: 0, y: 0, width: 4000, height: 1150 }

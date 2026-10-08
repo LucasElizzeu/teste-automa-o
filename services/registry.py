@@ -8,12 +8,10 @@ from __future__ import annotations
 
 from core.config import Settings
 from services.base import DashboardService
-from services.flowbix import FlowbixService
 from services.grafana import GrafanaService
 
 SERVICE_REGISTRY: dict[str, type[DashboardService]] = {
     GrafanaService.system_id: GrafanaService,
-    FlowbixService.system_id: FlowbixService,
 }
 
 
