@@ -10,7 +10,7 @@ Escolhas tecnicas:
     acumula (ao contrario de sleep(3600) repetido).
 
 Se voce preferir cron do sistema em vez de processo residente, use:
-    python main.py --all     em um crontab, 5x/dia.
+    python main.py --all     em um crontab.
 Ambos funcionam; o modo --schedule existe para quem quer tudo no container.
 """
 
@@ -22,7 +22,6 @@ from zoneinfo import ZoneInfo
 
 from core.config import Settings
 from core.workflow import CaptureRunner
-from utils.caption import build_summary
 
 CHECK_INTERVAL_SECONDS = 20
 
@@ -77,7 +76,10 @@ def run_scheduler(settings: Settings, logger) -> None:
 
     pretty = ", ".join(f"{h:02d}:{m:02d}" for h, m in sorted(slots))
     logger.info("Agendador ativo | timezone=%s | horarios=%s", settings.schedule.timezone, pretty)
-    logger.info("Proximo disparo: %s", (next_run(slots, datetime.now(tz)) or datetime.now(tz)).strftime("%d/%m/%Y %H:%M"))
+
+    proximo = next_run(slots, datetime.now(tz))
+    if proximo:
+        logger.info("Proximo disparo: %s", proximo.strftime("%d/%m/%Y %H:%M"))
 
     last_fired: datetime | None = None
 
@@ -89,27 +91,14 @@ def run_scheduler(settings: Settings, logger) -> None:
             if last_fired is None or (now - last_fired) > timedelta(minutes=1):
                 last_fired = now
                 logger.info("Disparo agendado %02d:%02d iniciado.", now.hour, now.minute)
-                _run_cycle(settings, logger, now)
+                _run_cycle(settings, logger)
 
         time.sleep(CHECK_INTERVAL_SECONDS)
 
 
-def _run_cycle(settings: Settings, logger, moment: datetime) -> None:
+def _run_cycle(settings: Settings, logger) -> None:
     """Uma execucao completa; falhas de um site nao afetam os demais."""
-    runner = CaptureRunner(settings, logger)
     try:
-        results = runner.run_all(send=settings.telegram.enabled and settings.telegram.send_by_default)
+        CaptureRunner(settings, logger).run_all()
     except Exception as exc:
         logger.exception("Falha inesperada no ciclo de captura: %s", exc)
-        return
-
-    ok = sum(1 for r in results if r.ok)
-    fail = len(results) - ok
-    logger.info("Ciclo concluido | ok=%d | falhas=%d", ok, fail)
-
-    if fail and settings.telegram.enabled:
-        from services.telegram import build_client
-
-        client = build_client(settings, logger)
-        if client.configured:
-            client.send_message(build_summary(results, moment))

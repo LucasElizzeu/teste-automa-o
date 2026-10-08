@@ -64,5 +64,5 @@ class GrafanaService(DashboardService):
             system_id=self.system_id,
             url=target_url,
             period=self.request.period,
-            captured_at="",
         )
+

@@ -40,15 +40,6 @@ browser:
   user_agent: null
 
 # ---------------------------------------------
-# Telegram
-# ---------------------------------------------
-telegram:
-  enabled: true
-  send_by_default: false
-  silent_notifications: false
-  max_caption_length: 1024
-
-# ---------------------------------------------
 # Autenticacao / sessoes
 # ---------------------------------------------
 auth:

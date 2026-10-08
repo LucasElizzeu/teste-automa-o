@@ -1,15 +1,17 @@
-"""Contrato comum dos servicos de dashboard (Grafana, Flowbix, ...).
+"""Contrato comum dos servicos de dashboard.
 
 Um servico sabe: onde fica o login, quais seletores usar e como capturar.
-Ele NAO sabe nada sobre Telegram, agendamento ou nomes de arquivo - isso e
+Ele NAO sabe nada sobre agendamento ou nomes de arquivo - isso e
 responsabilidade do workflow. Assim, adicionar um sistema novo = 1 classe nova.
 """
 
 from __future__ import annotations
 
+import os
+import re
+import urllib.parse as urlparse
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from pathlib import Path
 
 from core.config import Settings, SiteSpec, SystemSpec
 
@@ -22,7 +24,6 @@ class CaptureRequest:
     spec: SystemSpec
     settings: Settings
     logger: object
-    storage_path: Path
     period: str | None = None
 
 
@@ -34,7 +35,6 @@ class CaptureResult:
     system_id: str
     url: str
     period: str | None = None
-    captured_at: str = ""
 
 
 class DashboardService(ABC):
@@ -51,9 +51,7 @@ class DashboardService(ABC):
 
     @property
     def login_url(self) -> str | None:
-        """URL de login configurada (yaml ou env)."""
-        import os
-
+        """URL de login configurada (yaml ou ambiente)."""
         if self.spec.login_url:
             return self.spec.login_url
         return (os.getenv(f"{self.system_id.upper()}_LOGIN_URL") or "").strip() or None
@@ -61,8 +59,6 @@ class DashboardService(ABC):
     @property
     def credentials(self) -> tuple[str, str]:
         """Usuario/senha vindos exclusivamente do .env / ambiente."""
-        import os
-
         prefix = self.system_id.upper()
         return (
             (os.getenv(f"{prefix}_USERNAME") or "").strip(),
@@ -76,24 +72,23 @@ class DashboardService(ABC):
 
 
 def build_url_with_period(url: str, period: str | None) -> str:
-    """Acrescenta o periodo na query string, validando a URL primeiro."""
-    import re
-    import urllib.parse as urlparse
+    """Acrescenta o periodo na query string, quando o sistema suportar.
 
-    from browser.url_check import normalize_url
-
-    clean = normalize_url(url, "URL do dashboard")
-
+    O Grafana aceita `from=now-6h&to=now` na URL, o que evita depender de
+    cliques na interface. Sem periodo reconhecido, a URL volta inalterada.
+    """
     if not period:
-        return clean
+        return url
 
     match = re.fullmatch(r"(\d+)\s*([smhdw])", str(period).strip().lower())
     if not match:
-        return clean
+        return url
 
-    parts = urlparse.urlsplit(clean)
+    parts = urlparse.urlsplit(url)
     query = dict(urlparse.parse_qsl(parts.query, keep_blank_values=True))
+    # Se a URL ja traz o intervalo, respeita o que esta la.
+    if "from" in query and "to" in query:
+        return url
     query["from"] = f"now-{match.group(1)}{match.group(2)}"
     query["to"] = "now"
     return urlparse.urlunsplit(parts._replace(query=urlparse.urlencode(query)))
-

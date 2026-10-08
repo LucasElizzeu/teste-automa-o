@@ -53,23 +53,3 @@ def cleanup_old_screenshots(settings=None, logger=None) -> int:
             continue
 
     return removed
-
-
-def disk_usage_mb() -> float:
-    """Uso atual da pasta de screenshots, em MB (para monitoramento)."""
-    root = Path(SCREENSHOTS_DIR)
-    if not root.exists():
-        return 0.0
-    total = sum(p.stat().st_size for p in root.rglob("*") if p.is_file())
-    return round(total / (1024 * 1024), 2)
-
-
-def purge_all(confirm: bool = False) -> int:
-    """Apaga TODOS os screenshots. Exige confirm=True (protecao contra acidente)."""
-    root = Path(SCREENSHOTS_DIR)
-    if not confirm or not root.exists():
-        return 0
-    count = sum(1 for p in root.rglob("*") if p.is_file())
-    shutil.rmtree(root)
-    root.mkdir(parents=True, exist_ok=True)
-    return count
