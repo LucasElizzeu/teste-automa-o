@@ -295,6 +295,15 @@ class PlaywrightManager:
         login_url = normalize_url(login_url, f"login_url de {spec.system_id}")
         self.login(spec, login_url, username, password)
 
+        self.login(spec, login_url, username, password)
+
+        # SPA pode demorar para concluir a sessao apos o clique. Espera a
+        # aplicacao sair da tela de login antes de seguir para o dashboard.
+        if spec.login_wait_seconds:
+            self.logger.info("Aguardando %.1fs pos-login (%s).", spec.login_wait_seconds, spec.system_id)
+            self.page.wait_for_timeout(int(spec.login_wait_seconds * 1000))
+
+
     # -------------------------------------------------------------- navegacao
 
     def open_dashboard(self, spec: SystemSpec, url: str, period: str | None = None) -> None:
@@ -367,6 +376,22 @@ class PlaywrightManager:
                 page.locator(panel.ready).first.wait_for(state="visible", timeout=timeout_ms)
             except PlaywrightTimeout as exc:
                 raise DashboardNotLoadedError(f"Indicador de pronto nao apareceu: {panel.ready}") from exc
+
+        self.assert_charts_present(spec)
+
+        # Pausa extra antes de capturar. O valor do sistema, quando definido,
+        # tem prioridade sobre o global.
+        extra = (
+            spec.extra_settle_seconds
+            if spec.extra_settle_seconds is not None
+            else self.settings.browser.extra_settle_seconds
+        )
+        extra = float(extra or 0)
+        if extra:
+            self.logger.info("Aguardando %.1fs extras antes de capturar.", extra)
+            page.wait_for_timeout(int(extra * 1000))
+
+
 
         self.wait_for_no_spinner(timeout_ms=15000)
 

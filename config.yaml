@@ -12,13 +12,21 @@
 # Agendamento
 # ---------------------------------------------
 schedule:
-  mode: "mixed"
+  mode: "cron"
   times:
-    - "08:00"
+    - "09:00"
+    - "09:00"
+    - "10:00"
+    - "11:00"
     - "12:00"
+    - "13:00"
+    - "14:00"
+    - "15:00"
     - "16:00"
-    - "20:00"
-    - "00:00"
+    - "17:00"
+    - "18:00"
+    - "19:00"
+    - "19:58"
   every_hours: []
   timezone: "America/Manaus"
 
@@ -81,6 +89,24 @@ systems:
       container_selector: '.react-grid-layout'
       ready_selector: null
       error_selector: '[role="alert"]'
+    filters:
+      time_picker_selector: null
+      presets: {}
+
+  asns4:
+    login_url: "http://172.30.0.77:3001/login"
+    login_wait_seconds: 13        # espera a sessao concluir apos o clique
+    extra_settle_seconds: 12     # espera os graficos desenharem
+    login:
+      username_selector: 'input[placeholder="Digite seu e-mail"]'
+      password_selector: 'input[placeholder="Digite sua senha"]'
+      submit_selector: 'button[type="submit"]'
+      success_selector: null
+      logged_in_url_contains: "/traffic/"
+    panel:
+      container_selector: null
+      ready_selector: null
+      error_selector: null
     filters:
       time_picker_selector: null
       presets: {}
@@ -164,3 +190,11 @@ sites:
     periodo: "1h"
     enabled: true
     crop_region: { x: 0, y: 0, width: 4000, height: 3000 }
+
+  - nome: "AFCNETFLOW OPERADORAS"
+    sistema: "asns4"
+    url: "http://172.30.0.77:3001/traffic/asns4"
+    periodo: "1h"
+    enabled: true
+    descricao: "AFCNetFlow - Operadoras"
+    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }

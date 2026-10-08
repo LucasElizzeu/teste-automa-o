@@ -155,6 +155,8 @@ class SystemSpec:
     login: SelectorSpec = field(default_factory=SelectorSpec)
     panel: PanelSpec = field(default_factory=PanelSpec)
     filters: FiltersSpec = field(default_factory=FiltersSpec)
+    login_wait_seconds: float = 0.0      # pausa extra apos autenticar
+    extra_settle_seconds: float | None = None   # sobrescreve o global
 
     @classmethod
     def from_dict(cls, system_id: str, data: dict[str, Any] | None) -> "SystemSpec":
@@ -165,6 +167,12 @@ class SystemSpec:
             login=SelectorSpec.from_dict(data.get("login")),
             panel=PanelSpec.from_dict(data.get("panel")),
             filters=FiltersSpec.from_dict(data.get("filters")),
+            login_wait_seconds=float(data.get("login_wait_seconds") or 0),
+            extra_settle_seconds=(
+                float(data["extra_settle_seconds"])
+                if data.get("extra_settle_seconds") is not None
+                else None
+            ),
         )
 
 
