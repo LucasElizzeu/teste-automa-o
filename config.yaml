@@ -2,10 +2,6 @@
 # Configuracao do sistema de monitoramento operacional
 # =============================================================================
 # Este arquivo NAO contem segredos. Usuario, senha e tokens ficam no .env.
-#
-# O recorte de cada tela foi medido a partir das capturas reais (print do
-# Chrome sem barra de tarefas), portanto os valores abaixo sao medidos, nao
-# estimados.
 # =============================================================================
 
 # ---------------------------------------------
@@ -14,7 +10,7 @@
 schedule:
   mode: "cron"
   times:
-    - "09:00"
+    - "08:00"
     - "09:00"
     - "10:00"
     - "11:00"
@@ -26,7 +22,6 @@ schedule:
     - "17:00"
     - "18:00"
     - "19:00"
-    - "19:58"
   every_hours: []
   timezone: "America/Manaus"
 
@@ -37,7 +32,7 @@ browser:
   headless: true
   viewport_width: 2000
   viewport_height: 2000
-  device_scale_factor: 2
+  device_scale_factor: 1
   navigation_timeout_ms: 60000
   element_timeout_ms: 30000
   extra_settle_seconds: 4
@@ -65,8 +60,7 @@ auth:
 # ---------------------------------------------
 # Saida de imagens
 # ---------------------------------------------
-# Sem recorte global: cada site define o seu proprio `crop_region`, medido na
-# respectiva tela. O valor do site tem prioridade sobre este.
+# Sem recorte global: cada site define o seu proprio `crop_region`.
 output:
   screenshot_retention_days: 7
   filename_pattern: "{date}_{time}_{site}_{system}.png"
@@ -93,24 +87,6 @@ systems:
       time_picker_selector: null
       presets: {}
 
-  asns4:
-    login_url: "http://172.30.0.77:3001/login"
-    login_wait_seconds: 13        # espera a sessao concluir apos o clique
-    extra_settle_seconds: 12     # espera os graficos desenharem
-    login:
-      username_selector: 'input[placeholder="Digite seu e-mail"]'
-      password_selector: 'input[placeholder="Digite sua senha"]'
-      submit_selector: 'button[type="submit"]'
-      success_selector: null
-      logged_in_url_contains: "/traffic/"
-    panel:
-      container_selector: null
-      ready_selector: null
-      error_selector: null
-    filters:
-      time_picker_selector: null
-      presets: {}
-
   flowbix:
     login_url: null
     login:
@@ -130,71 +106,70 @@ systems:
 # ---------------------------------------------
 # Sites / dashboards
 # ---------------------------------------------
-# y = 46 e a altura da barra superior do Grafana ate o inicio dos paineis.
-# height = fim do conteudo daquele dashboard, medido na captura real.
+# y = 46 e a barra superior do Grafana ate o inicio dos paineis.
+# height = fim do conteudo daquele dashboard, ja calibrado.
 # ---------------------------------------------
 sites:
-  - nome: "VELOSONET 4G"
-    sistema: "grafana"
-    url: "http://45.190.21.30:3666/d/kokmJS2Dz/cliente-velosonet-velosonet-4g-geral-v3?orgId=2&refresh=1m&from=now-1h&to=now"
-    periodo: "1h"
-    enabled: true
-    crop_region: { x: 0, y: 0, width: 4000, height: 2300 }
-
-
   - nome: "MANAUS x COARI"
     sistema: "grafana"
     url: "http://45.190.21.30:3666/d/T6YQKcRDk/cliente-velosonet-consumo-gnex-manausxcoari?orgId=2&refresh=1m&from=now-1h&to=now"
     periodo: "1h"
     enabled: true
-    crop_region: { x: 0, y: 0, width: 4000, height: 3000 }
+    descricao: "Consumo GNeX Manaus x Coari"
+    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
 
   - nome: "CONSUMO TELEBRAS"
     sistema: "grafana"
     url: "http://45.190.21.30:3666/d/oKsjhkF7z/cliente-velosonet-consumo-telebras?orgId=2&refresh=1m&from=now-1h&to=now"
     periodo: "1h"
     enabled: true
-    crop_region: { x: 0, y: 0, width: 4000, height: 3000 }
+    descricao: "Consumo Telebras"
+    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
 
   - nome: "MONITORAMENTO CENTRAL"
     sistema: "grafana"
     url: "http://45.190.21.30:3666/d/PnFoeAkMz/cliente-velosonet-monitoramento-central?orgId=2&refresh=1m&from=now-1h&to=now"
     periodo: "1h"
     enabled: true
-    crop_region: { x: 0, y: 0, width: 4200, height: 3000 }
+    descricao: "Monitoramento Central"
+    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
 
   - nome: "CONSUMO TEFE"
     sistema: "grafana"
     url: "http://45.190.21.30:3666/d/pSXdpoaMz/cliente-velosonet-consumo-tefe?orgId=2&refresh=1m&from=now-1h&to=now"
     periodo: "1h"
     enabled: true
-    crop_region: { x: 0, y: 0, width: 4000, height: 3000 }
+    descricao: "Consumo Tefe"
+    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
 
   - nome: "VOLT NETPROBE"
     sistema: "grafana"
     url: "http://45.190.21.30:3666/d/n-E459RGk/cliente-velosonet-monitoramento-volt-netprobe?orgId=2&refresh=1m"
     periodo: "1h"
     enabled: true
-    crop_region: { x: 0, y: 0, width: 4000, height: 3000 }
+    descricao: "Monitoramento Volt Netprobe"
+    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
 
   - nome: "LATENCIA SAIDAS"
     sistema: "grafana"
-    url: "http://45.190.21.30:3666/d/j6UmxAGIz/cliente-velosonet-monitoramento-latencia-saidas?orgId=2&refresh=1m&from=now-1h&to=now"
-    periodo: "1h"
+    url: "http://45.190.21.30:3666/d/j6UmxAGIz/cliente-velosonet-monitoramento-latencia-saidas?orgId=2&refresh=1m&from=now-3h&to=now"
+    periodo: "3h"
     enabled: true
-    crop_region: { x: 0, y: 0, width: 4000, height: 3000 }
+    descricao: "Monitoramento Latencia Saidas"
+    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
 
   - nome: "SAIDA LINK CDN"
     sistema: "grafana"
     url: "http://45.190.21.30:3666/d/q6AMApqIz/saida-link-cdn-consumo?orgId=2&refresh=1m&from=now-1h&to=now"
     periodo: "1h"
     enabled: true
-    crop_region: { x: 0, y: 0, width: 4000, height: 3000 }
+    descricao: "Saida Link CDN Consumo"
+    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
 
-  - nome: "AFCNETFLOW OPERADORAS"
-    sistema: "asns4"
-    url: "http://172.30.0.77:3001/traffic/asns4"
+  - nome: "SAIDA LINK CDN"
+    sistema: "grafana"
+    url: "http://45.190.21.30:3666/d/kokmJS2Dz/cliente-velosonet-velosonet-4g-geral-v3?orgId=2&refresh=1m&from=now-1h&to=now"
     periodo: "1h"
     enabled: true
-    descricao: "AFCNetFlow - Operadoras"
+    descricao: "VelosoNET 4G"
     crop_region: { x: 0, y: 0, width: 4000, height: 4000 }

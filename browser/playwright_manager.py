@@ -36,7 +36,7 @@ GENERIC_LOGIN_HINTS = (
     'input[type="password"]',
     'form[action*="login" i]',
     '[class*="login" i] input[name*="user" i]',
-    '#login',
+    "#login",
 )
 
 GENERIC_ERROR_HINTS = (
@@ -63,6 +63,18 @@ class LoginFailedError(RuntimeError):
 
 class DashboardNotLoadedError(RuntimeError):
     """A pagina carregou, mas os graficos/panels nao apareceram."""
+
+
+class ConfigErrorForLogin(RuntimeError):
+    """Faltam seletores de login ou credenciais para este sistema."""
+
+    def __init__(self, system_id: str):
+        super().__init__(
+            f"Login de {system_id} nao configurado. Preencha em config.yaml os seletores "
+            f"systems.{system_id}.login.* (username_selector, password_selector, submit_selector) "
+            f"conferidos na pagina real, e defina {system_id.upper()}_USERNAME / "
+            f"{system_id.upper()}_PASSWORD no .env."
+        )
 
 
 class PlaywrightManager:
@@ -101,6 +113,7 @@ class PlaywrightManager:
             "--no-sandbox",
             "--disable-gpu",
             "--hide-scrollbars",
+            "--ignore-certificate-errors",
         ]
         self._browser = self._playwright.chromium.launch(
             headless=self.settings.browser.headless,
@@ -235,7 +248,19 @@ class PlaywrightManager:
 
         page.locator(login.username).first.fill(username)
         page.locator(login.password).first.fill(password)
-        page.locator(login.submit).first.click()
+
+        # Algumas SPA so habilitam o botao apos validar os campos. Espera ele
+        # ficar clicavel em vez de clicar no vazio.
+        submit = page.locator(login.submit).first
+        try:
+            deadline = time.monotonic() + 8
+            while time.monotonic() < deadline:
+                if submit.is_enabled():
+                    break
+                page.wait_for_timeout(250)
+        except PlaywrightError:
+            pass
+        submit.click()
 
         # Espera sair da tela de login.
         deadline = time.monotonic() + self.settings.browser.navigation_timeout_ms / 1000
@@ -289,20 +314,7 @@ class PlaywrightManager:
             raise ConfigErrorForLogin(spec.system_id)
         if not username or not password:
             raise ConfigErrorForLogin(spec.system_id)
-
-        from browser.url_check import normalize_url
-
-        login_url = normalize_url(login_url, f"login_url de {spec.system_id}")
         self.login(spec, login_url, username, password)
-
-        self.login(spec, login_url, username, password)
-
-        # SPA pode demorar para concluir a sessao apos o clique. Espera a
-        # aplicacao sair da tela de login antes de seguir para o dashboard.
-        if spec.login_wait_seconds:
-            self.logger.info("Aguardando %.1fs pos-login (%s).", spec.login_wait_seconds, spec.system_id)
-            self.page.wait_for_timeout(int(spec.login_wait_seconds * 1000))
-
 
     # -------------------------------------------------------------- navegacao
 
@@ -377,6 +389,15 @@ class PlaywrightManager:
             except PlaywrightTimeout as exc:
                 raise DashboardNotLoadedError(f"Indicador de pronto nao apareceu: {panel.ready}") from exc
 
+        self.wait_for_no_spinner(timeout_ms=15000)
+
+        if panel.error:
+            try:
+                if page.locator(panel.error).first.is_visible(timeout=1000):
+                    raise DashboardNotLoadedError("Dashboard exibiu indicador de erro.")
+            except PlaywrightTimeout:
+                pass
+
         self.assert_charts_present(spec)
 
         # Pausa extra antes de capturar. O valor do sistema, quando definido,
@@ -389,23 +410,6 @@ class PlaywrightManager:
         extra = float(extra or 0)
         if extra:
             self.logger.info("Aguardando %.1fs extras antes de capturar.", extra)
-            page.wait_for_timeout(int(extra * 1000))
-
-
-
-        self.wait_for_no_spinner(timeout_ms=15000)
-
-        if panel.error:
-            try:
-                if page.locator(panel.error).first.is_visible(timeout=1000):
-                    raise DashboardNotLoadedError("Dashboard exibiu indicador de erro.")
-            except PlaywrightTimeout:
-                pass
-
-        self.assert_charts_present(spec)
-
-        extra = float(self.settings.browser.extra_settle_seconds or 0)
-        if extra:
             page.wait_for_timeout(int(extra * 1000))
 
     def wait_for_no_spinner(self, timeout_ms: int = 15000) -> None:
@@ -512,15 +516,3 @@ class PlaywrightManager:
                     page.wait_for_timeout(300)
             except PlaywrightError:
                 continue
-
-
-class ConfigErrorForLogin(RuntimeError):
-    """Faltam seletores de login ou credenciais para este sistema."""
-
-    def __init__(self, system_id: str):
-        super().__init__(
-            f"Login de {system_id} nao configurado. Preencha em config.yaml os seletores "
-            f"systems.{system_id}.login.* (username_selector, password_selector, submit_selector) "
-            f"conferidos na pagina real, e defina {system_id.upper()}_USERNAME / "
-            f"{system_id.upper()}_PASSWORD no .env."
-        )

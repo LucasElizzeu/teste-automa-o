@@ -1,12 +1,10 @@
-#!/usr/bin/env python3
-"""
-Ponto de entrada do sistema de monitoramento operacional.
+"""Ponto de entrada do sistema de monitoramento operacional.
 
 Uso:
     python main.py --all
-    python main.py --site "MANAUS - TEFE"
-    python main.py --site "MANAUS - TEFE" --send
-    python main.py --site "MANAUS - TEFE" --no-send
+    python main.py --site "CONSUMO TEFE"
+    python main.py --site "CONSUMO TEFE" --send
+    python main.py --site "CONSUMO TEFE" --no-send
     python main.py --telegram-test
     python main.py --schedule
     python main.py --cleanup
