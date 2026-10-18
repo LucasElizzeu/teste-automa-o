@@ -9,9 +9,11 @@ from __future__ import annotations
 from core.config import Settings
 from services.base import DashboardService
 from services.grafana import GrafanaService
+from services.traffic import TrafficService
 
 SERVICE_REGISTRY: dict[str, type[DashboardService]] = {
     GrafanaService.system_id: GrafanaService,
+    TrafficService.system_id: TrafficService,
 }
 
 

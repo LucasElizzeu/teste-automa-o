@@ -80,10 +80,12 @@ class ConfigErrorForLogin(RuntimeError):
 class PlaywrightManager:
     """Context manager que entrega uma pagina autenticada pronta para captura."""
 
-    def __init__(self, settings: Settings, logger, system_id: str = ""):
+    def __init__(self, settings: Settings, logger, system_id: str = "",
+        http_credentials: dict[str, str] | None = None,):
         self.settings = settings
         self.logger = logger
         self.system_id = system_id
+        self.http_credentials = http_credentials
         self._playwright = None
         self._browser: Browser | None = None
         self._context: BrowserContext | None = None
@@ -137,6 +139,8 @@ class PlaywrightManager:
             context_args["storage_state"] = state
             self.logger.info("Sessao carregada de %s", self.session_path.name)
 
+        if self.http_credentials:
+            context_args["http_credentials"] = self.http_credentials
         self._context = self._browser.new_context(**context_args)
         self._context.set_default_timeout(self.settings.browser.element_timeout_ms)
         self._context.set_default_navigation_timeout(self.settings.browser.navigation_timeout_ms)
