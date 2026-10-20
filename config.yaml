@@ -122,7 +122,7 @@ sites:
     periodo: "1h"
     enabled: true
     descricao: "Monitoramento Volt Netprobe"
-    crop_region: { x: 0, y: 0, width: 4000, height: 4000 }
+    crop_region: { x: 1446, y: 1140, width: 234, height: 334 }
 
   - nome: "LATENCIA SAIDAS"
     sistema: "grafana"

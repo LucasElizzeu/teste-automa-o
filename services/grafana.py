@@ -14,6 +14,7 @@ Fluxo de captura:
 
 from __future__ import annotations
 
+from dataclasses import replace
 import time
 
 from browser.playwright_manager import (
